@@ -1,3 +1,5 @@
+#include<map>
+#include<vector>
 enum class Type{
     OBJECT,
     LIST,
@@ -37,5 +39,11 @@ class JSONObject{
             return value;
         }
         throw std::logic_error("Improper return");
+    }
+
+    void addObject(JSONObject toAdd){
+        if(type==Type::OBJECT){
+            this->object 
+        }
     }
 };

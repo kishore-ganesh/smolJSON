@@ -17,7 +17,8 @@ class JSONParser{
     std::fstream file;
     std::stack<State> currentStates;
     std::map<std::pair<TOKEN, State>, State> transitions;
-    JSONObject& root;
+    std::unique_ptr<JSONObject> root = nullptr;
+    std::unique_ptr<JSONObject> current = nullptr;
 
     JSONParser(){
         /*
@@ -90,23 +91,46 @@ class JSONParser{
         }
         if(nextState==State::POP){
             currentStates.pop();
-        }
+            if(currentStates.top()==State::INSIDE_ARRAY){
+                currentStates.push(State::ARRAY_VALUE_START) //rename
+                // look at the transition
+            }
+            if(currentStates.top()==State::INSIDE_OBJECT){
+                currentStates.push(State::END_VALUE) //When empty object?
+            }
+            if(currentStates.top()==State::INSIDE_GLOBAL){
+                currentStates.push(State::END);
+            }
+        } else{
+            currentStates.push(nextState);
 
-        //THOSE TOKENS in between need to be popped
-        
-        if(currentState.top()==STATE::END_KEY){
-            
         }
+        
+        //THOSE TOKENS in between need to be popped
+    
     }
 
     void parse(){
-        std::string key;
+        std::string key="";
         while(!tokenizer.hasMoreTokens()){
             Token token = tokenizer.getToken();
             transition(token);
             switch(currentState.top()){
-                case STATE::HAS_KEY:{}.
-                case STATE::ST
+                case STATE::INSIDE_OBJECT:{
+                    if(root!=null){
+                        
+                    }
+                    break;
+                }
+                case STATE::END_VALUE:{
+                    /*
+                        Problem: Differentiating between string and object/array
+                     */
+                    if(current->getType()==STRING||current->getType()==NUMBER){
+                        previous->add
+                    }
+                }
+                case STATE::
             }
             if(currentState.top()==STATE::HAS_KEY){
                 key = token.value;
