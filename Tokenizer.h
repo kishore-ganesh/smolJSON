@@ -67,8 +67,13 @@ class Tokenizer{
         char c = ' ';
         while((c==' '||c=='\n')){
             file.get(c); // check
-            if((c==' '||c=='\n')&&file.eof()){
+
+            if((c==' '||c=='\n')&&!file.good()){
+                // std::cout << file.eof() << " " << file.fail() << std::endl;
                 throw std::logic_error("Ran out of tokens");
+            }
+            else if(!file.good()){
+                return c;
             }
         }
         // std::cout << "NOWHITE: " << c << std::endl;
@@ -83,7 +88,6 @@ class Tokenizer{
         }
         prevPos = file.tellg();
         c = getWithoutWhiteSpace();
-        
         
         
         struct Token token;
@@ -109,7 +113,13 @@ class Tokenizer{
             token.value+=c;
             while((c>='0'&&c<='9')||c=='.'){
                 file.get(c);
-                token.value+=c;
+                
+                if(file.eof()){
+                    break;
+                }
+                else{
+                    token.value+=c;
+                }
             }
 
         }
@@ -135,6 +145,9 @@ class Tokenizer{
     }
 
     void rollBackToken(){
+        if(file.eof()){
+            file.clear();
+        }
         file.seekg(prevPos);
     }
 

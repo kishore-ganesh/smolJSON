@@ -1,26 +1,10 @@
 #include "JSONNode.h"
 #include "Tokenizer.h"
 #include <memory>
-#define TRANSITION(TOKEN, STATE, NEXT_STATE) transitions[make_pair(Token::TOKEN, State::STATE)] = NEXT_STATE
-
-enum class State
-{
-    INSIDE_GLOBAL,
-    INSIDE_OBJECT,
-    INSIDE_LIST,
-    VALID_OBJECT,
-    VALID_ITEM,
-    INVALID,
-    POP,
-    END,
-    END_KEY,
-    END_VALUE,
-};
 
 class JSONParser
 {
     std::fstream file;
-    std::stack<State> currentStates;
     std::shared_ptr<JSONNode> root;
     std::unique_ptr<JSONNode> current;
     Tokenizer tokenizer;
@@ -43,7 +27,7 @@ public:
                 case TOKEN::CURLY_OPEN:
                 {
                     std::shared_ptr<JSONNode> parsedObject = parseObject();
-                    parsedObject->printNode();
+                    parsedObject->printNode(0);
                     if (!root)
                     {
                         root = parsedObject;
@@ -53,10 +37,31 @@ public:
                 case TOKEN::ARRAY_OPEN:
                 {
                     std::shared_ptr<JSONNode> parsedList = parseList();
-                    parsedList->printNode();
+                    parsedList->printNode(0);
                     if (!root)
                     {
                         root = parsedList;
+                    }
+                    break;
+                }
+
+                case TOKEN::STRING:
+                {
+                    tokenizer.rollBackToken();
+                    std::shared_ptr<JSONNode> parsedString = parseString();
+                    parsedString->printNode(0);
+                    if (!root)
+                    {
+                        root = parsedString;
+                    }
+                    break;
+                }
+                case TOKEN::NUMBER:{
+                    tokenizer.rollBackToken();
+                    std::shared_ptr<JSONNode> parsedNumber = parseNumber();
+                    parsedNumber->printNode(0);
+                    if(!root){
+                        root = parsedNumber;
                     }
                     break;
                 }
@@ -139,6 +144,10 @@ public:
     {
         std::cout << "Parsing Number" << std::endl;
         std::shared_ptr<JSONNode> node = std::make_shared<JSONNode>();
+        Token nextToken = tokenizer.getToken();
+        std::string value = nextToken.value;
+        float fValue = std::stof(value);
+        node->setNumber(fValue);
         return node;
     }
 
