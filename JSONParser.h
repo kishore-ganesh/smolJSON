@@ -146,6 +146,7 @@ public:
         std::shared_ptr<JSONNode> node = std::make_shared<JSONNode>();
         Token nextToken = tokenizer.getToken();
         std::string value = nextToken.value;
+        std::cout << value << std::endl;
         float fValue = std::stof(value);
         node->setNumber(fValue);
         return node;
