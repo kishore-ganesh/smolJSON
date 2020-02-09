@@ -11,10 +11,17 @@ enum class Type
 class JSONNode
 {
 
-    std::map<std::string, std::shared_ptr<JSONNode>> object;
-    std::vector<std::shared_ptr<JSONNode>> list;
+    using JSONObject = std::map<std::string, std::shared_ptr<JSONNode>>; 
+    using JSONList = std::vector<std::shared_ptr<JSONNode>>; 
+    union Values{
+    JSONObject object;
+    JSONList list;
     std::string s;
     float value;
+    Values(JSONObject &object){
+        this->object = object;
+    }
+    } values;    
     Type type;
 
 public:
@@ -29,7 +36,7 @@ public:
     {
         if (type == Type::OBJECT)
         {
-            return object;
+            return values.object;
         }
         throw std::logic_error("Improper return");
     }
@@ -37,7 +44,7 @@ public:
     {
         if (type == Type::LIST)
         {
-            return list;
+            return values.list;
         }
         throw std::logic_error("Improper return");
     }
@@ -45,7 +52,7 @@ public:
     {
         if (type == Type::STRING)
         {
-            return s;
+            return values.s;
         }
         throw std::logic_error("Improper return");
     }
@@ -53,14 +60,14 @@ public:
     {
         if (type == Type::NUMBER)
         {
-            return value;
+            return values.value;
         }
         throw std::logic_error("Improper return");
     }
 
-    void setObject(std::map<std::string, std::shared_ptr<JSONNode>> object)
-    {
-        this->object = object;
+    void setObject(JSONObject object) {
+        new (&values.object) JSONObject; 
+        this->values.object = object;
         type = Type::OBJECT;
         // if(type==Type::OBJECT){
         //     this->object = toAdd;
@@ -69,17 +76,18 @@ public:
 
     void setString(std::string s)
     {
-        this->s = s;
+        this->values.s = s;
         type = Type::STRING;
     }
     void setNumber(float f)
     {
-        this->value = f;
+        this->values.value = f;
         type = Type::NUMBER;
     }
-    void setList(std::vector<std::shared_ptr<JSONNode>> list)
+    void setList(JSONList list)
     {
-        this->list = list;
+        new (&values.list) JSONList; 
+        this->values.list = list;
         type = Type::LIST;
     }
 
@@ -92,19 +100,19 @@ public:
         {
         case Type::STRING:
         {
-            outputString += spaceString + s;
+            outputString += spaceString + values.s;
             break;
         }
         case Type::NUMBER:
         {
-            outputString += spaceString + std::to_string(value);
+            outputString += spaceString + std::to_string(values.value);
             break;
         }
         case Type::LIST:
         {
             std::cout << "[";
             int index = 0;
-            for (auto node : list)
+            for (auto node : values.list)
             {
                 outputString += node->toString(indentationLevel + 1);
                 if (index < list.size() - 1)
@@ -119,11 +127,11 @@ public:
         case Type::OBJECT:
         {
             outputString += "{\n";
-            for (std::map<std::string, std::shared_ptr<JSONNode>>::iterator i = object.begin(); i != object.end(); i++)
+            for (JSONObject::iterator i = values.object.begin(); i != values.object.end(); i++)
             {
                 outputString += spaceString + i->first + ": ";
                 outputString += i->second->toString(indentationLevel + 1);
-                std::map<std::string, std::shared_ptr<JSONNode>>::iterator next = i;
+                JSONObject::iterator next = i;
                 next++;
                 if ((next) != object.end())
                 {
