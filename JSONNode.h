@@ -8,12 +8,13 @@ using JSONObject = std::map<std::string, std::shared_ptr<JSONNode>>;
 using JSONList = std::vector<std::shared_ptr<JSONNode>>;
 
 class JSONNode {
-  enum class Type { OBJECT, LIST, STRING, NUMBER }; // make it private
+  enum class Type { OBJECT, LIST, STRING, NUMBER, BOOLEAN}; // make it private
   union Values {
     JSONObject *object;
     JSONList *list;
     std::string *s;
-    float value;
+    float fValue;
+    bool bValue;
   } values;
   Type type;
 
@@ -38,9 +39,9 @@ public:
     }
     throw std::logic_error("Improper return");
   }
-  auto returnValue() {
+  auto returnFloat() {
     if (type == Type::NUMBER) {
-      return values.value;
+      return values.fValue;
     }
     throw std::logic_error("Improper return");
   }
@@ -58,7 +59,7 @@ public:
     type = Type::STRING;
   }
   void setNumber(float f) {
-    this->values.value = f;
+    this->values.fValue = f;
     type = Type::NUMBER;
   }
   void setList(JSONList *list) {
@@ -66,8 +67,14 @@ public:
     type = Type::LIST;
   }
 
+  void setBoolean(bool v){
+      this->values.bValue = v;
+      type = Type::BOOLEAN;
+  }
+
   std::string toString(int indentationLevel) {
     std::string spaceString = std::string(indentationLevel, ' ');
+    //sstreams
     std::string outputString = "";
 
     switch (type) {
@@ -76,7 +83,11 @@ public:
       break;
     }
     case Type::NUMBER: {
-      outputString += spaceString + std::to_string(values.value);
+      outputString += spaceString + std::to_string(values.fValue);
+      break;
+    }
+    case Type::BOOLEAN: {
+      outputString += spaceString + (values.bValue ? "true" : "false");
       break;
     }
     case Type::LIST: {
@@ -116,3 +127,9 @@ public:
   }
 };
 } // namespace JSON
+
+//aligned union
+//compare with actual library
+//Constructor - No setter getter
+//Inline Functions
+//o3 optimizations

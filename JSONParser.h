@@ -4,6 +4,8 @@
 
 class JSONParser {
   std::fstream file;
+  //Use C files
+  //Minimize shared pointers
   std::shared_ptr<JSON::JSONNode> root;
   std::unique_ptr<JSON::JSONNode> current;
   Tokenizer tokenizer;
@@ -29,7 +31,7 @@ public:
         }
         case TOKEN::ARRAY_OPEN: {
           std::shared_ptr<JSON::JSONNode> parsedList = parseList();
-          parsedList->printNode(0);
+          //parsedList->printNode(0);
           if (!root) {
             root = parsedList;
           }
@@ -39,7 +41,7 @@ public:
         case TOKEN::STRING: {
           tokenizer.rollBackToken();
           std::shared_ptr<JSON::JSONNode> parsedString = parseString();
-          parsedString->printNode(0);
+          //parsedString->printNode(0);
           if (!root) {
             root = parsedString;
           }
@@ -48,11 +50,18 @@ public:
         case TOKEN::NUMBER: {
           tokenizer.rollBackToken();
           std::shared_ptr<JSON::JSONNode> parsedNumber = parseNumber();
-          parsedNumber->printNode(0);
+          //parsedNumber->printNode(0);
           if (!root) {
             root = parsedNumber;
           }
           break;
+        }
+        
+        case TOKEN::BOOLEAN: {
+            tokenizer.rollBackToken();
+            std::shared_ptr<JSON::JSONNode> parsedBoolean = parseBoolean();
+            //parsedBoolean->printNode(0);
+            break;
         }
         }
       }
@@ -64,7 +73,7 @@ public:
     // assert token not valid
   }
 
-  std::shared_ptr<JSON::JSONNode> parseObject() {
+  std::shared_ptr<JSON::JSONNode> parseObject(){
     std::cout << "Parsing object " << std::endl;
     std::shared_ptr<JSON::JSONNode> node = std::make_shared<JSON::JSONNode>();
     JSON::JSONObject *keyObjectMap = new JSON::JSONObject();
@@ -95,6 +104,13 @@ public:
         case TOKEN::CURLY_OPEN: {
           (*keyObjectMap)[key] = parseObject();
           break;
+        }
+         case TOKEN::BOOLEAN: {
+            tokenizer.rollBackToken();
+            (*keyObjectMap)[key] = parseBoolean();
+            //parsedBoolean->printNode(0);
+            break;
+
         }
         }
         nextToken = tokenizer.getToken();
@@ -159,6 +175,13 @@ public:
           node = parseNumber();
           break;
         }
+         case TOKEN::BOOLEAN: {
+            tokenizer.rollBackToken();
+            node = parseBoolean();
+            //parsedBoolean->printNode(0);
+            break;
+
+        }
         }
         list->push_back(node);
         nextToken = tokenizer.getToken();
@@ -169,5 +192,12 @@ public:
     }
     node->setList(list);
     return node;
+  }
+  std::shared_ptr<JSON::JSONNode> parseBoolean(){
+      std::cout << "Parsing boolean" << std::endl;
+      std::shared_ptr<JSON::JSONNode> node = std::make_shared<JSON::JSONNode>();
+      Token nextToken = tokenizer.getToken();
+      node->setBoolean(nextToken.value == "True" ? true : false);
+      return node;
   }
 };

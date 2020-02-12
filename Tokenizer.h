@@ -13,7 +13,8 @@ enum class TOKEN
     NUMBER,
     ARRAY_OPEN,
     ARRAY_CLOSE,
-    COMMA
+    COMMA,
+    BOOLEAN
 };
 
 struct Token
@@ -57,6 +58,11 @@ struct Token
         {
             return "Comma";
         }
+        case TOKEN::BOOLEAN:
+        {
+            return "Boolean: " + value;;
+        }
+               
         }
     }
 };
@@ -107,6 +113,7 @@ public:
         prevPos = file.tellg();
         c = getWithoutWhiteSpace();
 
+        //std::cout << c << std::endl;
         struct Token token;
         if (c == '"')
         {
@@ -127,14 +134,14 @@ public:
         {
             token.type = TOKEN::CURLY_CLOSE;
         }
-        else if (c >= '0' && c <= '9')
+        else if (c=='-' || (c >= '0' && c <= '9'))
         {
             //Check if string is numeric
             token.type = TOKEN::NUMBER;
             token.value = "";
             token.value += c;
             std::streampos prevCharPos = file.tellg();
-            while ((c >= '0' && c <= '9') || c == '.')
+            while ((c=='-')||(c >= '0' && c <= '9') || c == '.')
             {
                 prevCharPos = file.tellg();
                 file.get(c);
@@ -145,7 +152,7 @@ public:
                 }
                 else
                 {
-                    if ((c >= '0' && c <= '9')||(c=='.'))
+                    if ((c=='-')||(c >= '0' && c <= '9')||(c=='.'))
                     {
                         token.value += c;
                     }
@@ -156,6 +163,16 @@ public:
                     }
                 }
             }
+        }
+        else if(c=='f'){
+            token.type = TOKEN::BOOLEAN;
+            token.value = "False";
+            file.seekg(4, std::ios_base::cur);
+        }
+        else if(c=='t'){
+            token.type = TOKEN::BOOLEAN;
+            token.value = "True";
+            file.seekg(3, std::ios_base::cur);
         }
         else if (c == '[')
         {
