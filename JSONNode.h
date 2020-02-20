@@ -8,7 +8,7 @@ using JSONObject = std::map<std::string, std::shared_ptr<JSONNode>>;
 using JSONList = std::vector<std::shared_ptr<JSONNode>>;
 
 class JSONNode {
-  enum class Type { OBJECT, LIST, STRING, NUMBER, BOOLEAN}; // make it private
+  enum class Type { OBJECT, LIST, STRING, NUMBER, BOOLEAN, NULL_TYPE}; // make it private
   union Values {
     JSONObject *object;
     JSONList *list;
@@ -72,11 +72,15 @@ public:
       type = Type::BOOLEAN;
   }
 
+  void setNull(){
+      type = Type::NULL_TYPE;
+  }
+
   std::string toString(int indentationLevel) {
     std::string spaceString = std::string(indentationLevel, ' ');
     //sstreams
     std::string outputString = "";
-
+    // std::cout < type << std::endl;
     switch (type) {
     case Type::STRING: {
       outputString += spaceString + *values.s;
@@ -89,6 +93,11 @@ public:
     case Type::BOOLEAN: {
       outputString += spaceString + (values.bValue ? "true" : "false");
       break;
+    }
+    case Type::NULL_TYPE: {
+      outputString += spaceString + "null";
+      break;
+
     }
     case Type::LIST: {
       std::cout << "[";

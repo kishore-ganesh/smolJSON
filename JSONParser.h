@@ -86,6 +86,7 @@ public:
         tokenizer.getToken();
         nextToken = tokenizer.getToken();
         std::shared_ptr<JSON::JSONNode> node;
+        //std::cout << nextToken.toString() << std::endl;
         switch (nextToken.type) {
         case TOKEN::STRING: {
           tokenizer.rollBackToken();
@@ -111,6 +112,10 @@ public:
             //parsedBoolean->printNode(0);
             break;
 
+        }
+         case TOKEN::NULL_TYPE: {
+            (*keyObjectMap)[key] = parseNull();
+            break;
         }
         }
         nextToken = tokenizer.getToken();
@@ -182,6 +187,10 @@ public:
             break;
 
         }
+         case TOKEN::NULL_TYPE: {
+            node = parseNull();
+            break;
+        }
         }
         list->push_back(node);
         nextToken = tokenizer.getToken();
@@ -198,6 +207,13 @@ public:
       std::shared_ptr<JSON::JSONNode> node = std::make_shared<JSON::JSONNode>();
       Token nextToken = tokenizer.getToken();
       node->setBoolean(nextToken.value == "True" ? true : false);
+      return node;
+  }
+
+  std::shared_ptr<JSON::JSONNode> parseNull(){
+      std::cout << "Parsing null" << std::endl;
+      std::shared_ptr<JSON::JSONNode> node = std::make_shared<JSON::JSONNode>();
+      node->setNull();
       return node;
   }
 };

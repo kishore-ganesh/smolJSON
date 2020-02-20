@@ -14,7 +14,8 @@ enum class TOKEN
     ARRAY_OPEN,
     ARRAY_CLOSE,
     COMMA,
-    BOOLEAN
+    BOOLEAN,
+    NULL_TYPE
 };
 
 struct Token
@@ -61,6 +62,11 @@ struct Token
         case TOKEN::BOOLEAN:
         {
             return "Boolean: " + value;;
+        }
+
+        case TOKEN::NULL_TYPE:
+        {
+            return "Null";
         }
                
         }
@@ -113,7 +119,7 @@ public:
         prevPos = file.tellg();
         c = getWithoutWhiteSpace();
 
-        //std::cout << c << std::endl;
+        std::cout << c << std::endl;
         struct Token token;
         if (c == '"')
         {
@@ -172,6 +178,10 @@ public:
         else if(c=='t'){
             token.type = TOKEN::BOOLEAN;
             token.value = "True";
+            file.seekg(3, std::ios_base::cur);
+        }
+        else if(c=='n'){
+            token.type = TOKEN::NULL_TYPE;
             file.seekg(3, std::ios_base::cur);
         }
         else if (c == '[')
